@@ -1,22 +1,22 @@
 // DOM Elements
-const playBtn = document.getElementById('play-btn');
-const prevBtn = document.getElementById('prev-btn');
-const nextBtn = document.getElementById('next-btn');
-const progressBar = document.getElementById('progress-bar');
-const volumeBar = document.getElementById('volume-bar');
-const currentTimeEl = document.getElementById('current-time');
-const totalTimeEl = document.getElementById('total-time');
-const trackNameEl = document.getElementById('track-name');
-const artistNameEl = document.getElementById('artist-name');
-const albumArtEl = document.getElementById('album-art');
+const playBtn = document.getElementById("play-btn");
+const playText = document.getElementById("play-text");
+const prevBtn = document.getElementById("prev-btn");
+const nextBtn = document.getElementById("next-btn");
+const progressBar = document.getElementById("progress-bar");
+const volumeBar = document.getElementById("volume-bar");
+const currentTimeEl = document.getElementById("current-time");
+const totalTimeEl = document.getElementById("total-time");
+const trackNameEl = document.getElementById("track-name");
+const artistNameEl = document.getElementById("artist-name");
+const albumArtEl = document.getElementById("album-art");
+const audio = document.getElementById("audio-player");
 
-// Music Player State
+// Player State
 let isPlaying = false;
 let currentSongIndex = 0;
-let audio = new Audio();
 
-// Dummy Song Data (Since actual audio files aren't provided, we'll simulate it)
-// Alternatively, I can use a free public domain audio link.
+// Songs
 const songs = [
   {
     title: "SUNNY TULIPS",
@@ -38,102 +38,131 @@ const songs = [
   }
 ];
 
-// Initialize Player
+// Load Song
 function loadSong(song) {
   trackNameEl.textContent = song.title;
   artistNameEl.textContent = song.artist;
   albumArtEl.src = song.cover;
   audio.src = song.src;
 
-  // Reset progress bar and time displays
   progressBar.value = 0;
   currentTimeEl.textContent = "0:00";
-  // The total time will update once the audio metadata is loaded
 }
 
-// Play/Pause Functionality
-function togglePlay() {
-  if (isPlaying) {
-    pauseSong();
-  } else {
-    playSong();
-  }
-}
-
+// Play Song
 function playSong() {
   isPlaying = true;
-  playBtn.textContent = 'PAUSE';
+  playText.textContent = "PAUSE";
   audio.play();
 }
 
+// Pause Song
 function pauseSong() {
   isPlaying = false;
-  playBtn.textContent = 'PLAY';
+  playText.textContent = "PLAY";
   audio.pause();
 }
 
-// Previous/Next Functionality
+// Toggle Play
+function togglePlay() {
+  isPlaying ? pauseSong() : playSong();
+}
+
+// Previous Song
 function prevSong() {
-  currentSongIndex--;
-  if (currentSongIndex < 0) {
-    currentSongIndex = songs.length - 1;
-  }
+  currentSongIndex =
+    (currentSongIndex - 1 + songs.length) % songs.length;
+
   loadSong(songs[currentSongIndex]);
-  if (isPlaying) playSong();
+
+  if (isPlaying) {
+    audio.play();
+  }
 }
 
+// Next Song
 function nextSong() {
-  currentSongIndex++;
-  if (currentSongIndex > songs.length - 1) {
-    currentSongIndex = 0;
-  }
+  currentSongIndex =
+    (currentSongIndex + 1) % songs.length;
+
   loadSong(songs[currentSongIndex]);
-  if (isPlaying) playSong();
+
+  if (isPlaying) {
+    audio.play();
+  }
 }
 
-// Progress Bar Update
-function updateProgress(e) {
-  const { duration, currentTime } = e.target;
+// Update Progress
+function updateProgress() {
+  if (!audio.duration) return;
 
-  if (isNaN(duration)) return;
+  const progressPercent =
+    (audio.currentTime / audio.duration) * 100;
 
-  const progressPercent = (currentTime / duration) * 100;
   progressBar.value = progressPercent;
 
-  // Calculate display time
-  let currentMins = Math.floor(currentTime / 60);
-  let currentSecs = Math.floor(currentTime % 60);
-  if (currentSecs < 10) currentSecs = `0${currentSecs}`;
-  currentTimeEl.textContent = `${currentMins}:${currentSecs}`;
+  // Premium progress fill
+  progressBar.style.background = `linear-gradient(
+    to right,
+    #1C0B0A ${progressPercent}%,
+    #ddd4ca ${progressPercent}%
+  )`;
 
-  let totalMins = Math.floor(duration / 60);
-  let totalSecs = Math.floor(duration % 60);
-  if (totalSecs < 10) totalSecs = `0${totalSecs}`;
-  if (!isNaN(totalMins) && !isNaN(totalSecs)) {
-      totalTimeEl.textContent = `${totalMins}:${totalSecs}`;
+  // Current time
+  let currentMins = Math.floor(audio.currentTime / 60);
+  let currentSecs = Math.floor(audio.currentTime % 60);
+
+  if (currentSecs < 10) {
+    currentSecs = `0${currentSecs}`;
   }
+
+  currentTimeEl.textContent =
+    `${currentMins}:${currentSecs}`;
 }
 
-// Set Progress Bar
-function setProgress(e) {
-  const value = progressBar.value;
-  const duration = audio.duration;
-  audio.currentTime = (value * duration) / 100;
+// Show Total Duration
+function loadMetadata() {
+  let mins = Math.floor(audio.duration / 60);
+  let secs = Math.floor(audio.duration % 60);
+
+  if (secs < 10) {
+    secs = `0${secs}`;
+  }
+
+  totalTimeEl.textContent = `${mins}:${secs}`;
 }
 
-// Set Volume
+// Change Progress
+function setProgress() {
+  if (!audio.duration) return;
+
+  audio.currentTime =
+    (progressBar.value * audio.duration) / 100;
+}
+
+// Volume
 function setVolume() {
   audio.volume = volumeBar.value / 100;
 }
 
-// Event Listeners
-playBtn.addEventListener('click', togglePlay);
-prevBtn.addEventListener('click', prevSong);
-nextBtn.addEventListener('click', nextSong);
-audio.addEventListener('timeupdate', updateProgress);
-audio.addEventListener('ended', nextSong);
-progressBar.addEventListener('input', setProgress);
-volumeBar.addEventListener('input', setVolume);
+// Error Handling
+function audioError() {
+  alert("Audio file missing or cannot be played.");
+}
 
-// Initial Load
+// Event Listeners
+playBtn.addEventListener("click", togglePlay);
+prevBtn.addEventListener("click", prevSong);
+nextBtn.addEventListener("click", nextSong);
+
+audio.addEventListener("timeupdate", updateProgress);
+audio.addEventListener("loadedmetadata", loadMetadata);
+audio.addEventListener("ended", nextSong);
+audio.addEventListener("error", audioError);
+
+progressBar.addEventListener("input", setProgress);
+volumeBar.addEventListener("input", setVolume);
+
+// Initial Setup
 loadSong(songs[currentSongIndex]);
+setVolume();
