@@ -21,20 +21,20 @@ const songs = [
   {
     title: "SUNNY TULIPS",
     artist: "The Florals",
-    src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-    cover: "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=500&auto=format&fit=crop"
+    src: "audio/song1.mp3",
+    cover: "images/cover1.jpg"
   },
   {
     title: "MIDNIGHT BLOOM",
     artist: "Night Garden",
-    src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
-    cover: "https://images.unsplash.com/photo-1507608616759-54f48f0af0ee?q=80&w=500&auto=format&fit=crop"
+    src: "audio/song2.mp3",
+    cover: "images/cover2.jpg"
   },
   {
     title: "DAWN CHORUS",
     artist: "Morning Light",
-    src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
-    cover: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=500&auto=format&fit=crop"
+    src: "audio/song3.mp3",
+    cover: "images/cover3.jpg"
   }
 ];
 
